@@ -8,13 +8,22 @@ function tryCatchWrapper(endpointFn) {
   };
 }
 
-function HttpErrors(status, message) {
-  const err = new Error(message);
-  err.status = status;
-  return err;
-}
+const message = {
+  400: "Bad Request",
+  401: "Unauthorized",
+  403: "Forbidden",
+  404: "Not found",
+  409: "Conflict",
+};
+
+const ValidationError = (status, message = message[status]) => {
+  const error = new Error(message);
+  error.status = status;
+
+  return error;
+};
 
 module.exports = {
   tryCatchWrapper,
-  HttpErrors,
+  ValidationError,
 };
