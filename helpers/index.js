@@ -1,5 +1,3 @@
-const { stack } = require("../app");
-
 function tryCatchWrapper(endpointFn) {
   return async (req, res, next) => {
     try {
