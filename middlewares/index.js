@@ -15,7 +15,7 @@ function validate(schema) {
 }
 
 async function auth(req, res, next) {
-  const { authorization = "" } = req.headers;
+  const { authorization = " " } = req.headers;
   const [bearer, token] = authorization.split(" ");
   if (bearer !== "Bearer") {
     throw ValidationError(401, "Not authorized");

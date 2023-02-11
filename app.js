@@ -21,10 +21,8 @@ app.use((req, res) => {
 });
 
 app.use((err, req, res, next) => {
-  console.error("Handling errors", err.message, err.name);
-
-  if (err.name === "ValidationError") {
-    return res.status(400).json({
+  if (err.status) {
+    return res.status(err.status).json({
       message: err.message,
     });
   }
@@ -32,12 +30,6 @@ app.use((err, req, res, next) => {
   if (err.message.includes("Cast to Object failed for value")) {
     return res.status(400).json({
       message: "id is valid",
-    });
-  }
-
-  if (err.status) {
-    return res.status(err.status).json({
-      message: err.message,
     });
   }
 

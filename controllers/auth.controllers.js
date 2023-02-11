@@ -33,13 +33,20 @@ async function register(req, res, next) {
 
 async function login(req, res, next) {
   const { email, password } = req.body;
+  const storedUser = await User.findOne({ email });
 
-  if (!storedUser || !storedUser.comparePassword(password)) {
-    return next(createError(401, "Email or password is wrong"));
+  if (!storedUser) {
+    throw new HttpError(401, "email is not valid");
   }
 
-  const payloud = { id: storedUser._id };
-  const token = jwt.sign(payloud, JWT_SECRET, {
+  const isPasswordValid = await bcrypt.compare(password, storedUser.password);
+
+  if (!isPasswordValid) {
+    throw new HttpError(401, "password is not valid");
+  }
+
+  const payload = { id: storedUser._id };
+  const token = jwt.sign(payload, JWT_SECRET, {
     expiresIn: "3h",
   });
   return res.json({
@@ -56,7 +63,7 @@ async function logout(req, res, next) {
 }
 
 async function getCurrent(req, res, next) {
-  const { email, subscription } = req.user;
+  const { email } = req.user;
   return res.json({
     data: {
       email,
