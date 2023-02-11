@@ -2,7 +2,13 @@ const { ValidationError } = require("../helpers/index");
 const { Contact } = require("../models/contactShema");
 
 async function getContacts(req, res, next) {
-  const contacts = await Contact.find({});
+  const { _id } = req.user;
+  const { page = 1, limit = 10, favorite = [true, false] } = req.query;
+  const skip = (page - 1) * limit;
+  const contacts = await Contact.find({ owner: _id, favorite }, "", {
+    skip,
+    limit: Number(limit),
+  }).populate("owner", "_id email subscription");
   res.json({
     message: "Contacts Found",
     data: contacts,
@@ -11,8 +17,9 @@ async function getContacts(req, res, next) {
 }
 
 async function getContact(req, res, next) {
+  const { _id } = req.user;
   const { contactId } = req.params;
-  const contact = await Contact.findById(contactId);
+  const contact = await Contact.findOne({ owner: _id, _id: contactId });
 
   if (!contact) {
     return next(ValidationError(404, "Contact Not Found"));
@@ -21,14 +28,16 @@ async function getContact(req, res, next) {
 }
 
 async function createContact(req, res, next) {
-  const newContacts = await Contact.create(req.body);
+  const { _id } = req.user;
+  const newContacts = await Contact.create({ ...req.body, owner: _id });
   res.status(201).json({ message: "Contact added", data: newContacts });
   return newContacts;
 }
 
 async function createPutContact(req, res, next) {
+  const { _id } = req.user;
   const { contactId } = req.params;
-  const contact = await Contact.findById(contactId);
+  const contact = await Contact.findOne({ owner: _id, _id: contactId });
   if (!contact) {
     return next(ValidationError(404, "Contact Not Found"));
   }
@@ -41,8 +50,10 @@ async function createPutContact(req, res, next) {
 
 async function createStatusContact(req, res, next) {
   const { contactId } = req.params;
+  const { _id } = req.user;
+
   const { favorite } = req.body;
-  const contact = await Contact.findById(contactId);
+  const contact = await Contact.findOne({ owner: _id, _id: contactId });
   if (!contact) {
     return next(createError(404, "Contact Not Found"));
   }
@@ -59,8 +70,9 @@ async function createStatusContact(req, res, next) {
 }
 
 async function removedContact(req, res, next) {
+  const { _id } = req.user;
   const { contactId } = req.params;
-  const contact = await Contact.findById(contactId);
+  const contact = await Contact.findOne({ owner: _id, _id: contactId });
   await Contact.findByIdAndRemove(contactId);
   if (!contact) {
     return next(ValidationError(404, `Not found contact with id=${contactId}`));
