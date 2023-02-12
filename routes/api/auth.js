@@ -2,7 +2,11 @@ const express = require("express");
 
 const { tryCatchWrapper } = require("../../helpers/index");
 const { validate, auth, upload } = require("../../middlewares/index");
-const { joiRegSchema, joiLogSchema } = require("../../models/user");
+const {
+  joiRegSchema,
+  joiLogSchema,
+  joiVerEmailSchema,
+} = require("../../models/user");
 
 const {
   register,
@@ -10,6 +14,8 @@ const {
   logout,
   getCurrent,
   updateAvatar,
+  verifyEmail,
+  reVerifyEmail,
 } = require("../../controllers/auth.controllers");
 
 const authRouter = express.Router();
@@ -24,6 +30,13 @@ authRouter.patch(
   tryCatchWrapper(auth),
   upload.single("avatar"),
   tryCatchWrapper(updateAvatar)
+);
+
+authRouter.get("/verify/:verificationToken", tryCatchWrapper(verifyEmail));
+authRouter.post(
+  "/verify",
+  validate(joiVerEmailSchema),
+  tryCatchWrapper(reVerifyEmail)
 );
 
 module.exports = {
