@@ -22,6 +22,10 @@ const schema = Schema(
       type: String,
       default: false,
     },
+    avatarURL: {
+      type: String,
+      required: true,
+    },
   },
   {
     versionKey: false,
