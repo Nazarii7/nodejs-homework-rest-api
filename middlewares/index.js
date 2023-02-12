@@ -1,6 +1,9 @@
 const { ValidationError } = require("../helpers/index");
 const jwt = require("jsonwebtoken");
 
+const multer = require("multer");
+const path = require("path");
+
 const { User } = require("../models/user");
 const { SECRET_KEY } = process.env;
 
@@ -15,7 +18,7 @@ function validate(schema) {
 }
 
 async function auth(req, res, next) {
-  const { authorization = "" } = req.headers;
+  const { authorization = " " } = req.headers;
   const [bearer, token] = authorization.split(" ");
   if (bearer !== "Bearer") {
     throw ValidationError(401, "Not authorized");
@@ -40,7 +43,23 @@ async function auth(req, res, next) {
   }
 }
 
+const tempDir = path.join(__dirname, "../temp");
+
+const multerConfig = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, tempDir);
+  },
+  filename: (req, file, cb) => {
+    cb(null, file.originalname);
+  },
+});
+
+const upload = multer({
+  storage: multerConfig,
+});
+
 module.exports = {
   validate,
   auth,
+  upload,
 };
